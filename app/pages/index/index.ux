@@ -1,0 +1,213 @@
+<template>
+  <div class="page">
+    <div class="topbar">
+      <div>
+        <text class="title">星卡集</text>
+        <text class="eyebrow">DAILY COLLECTION</text>
+      </div>
+      <div class="progressPill">
+        <text>{{ summary.owned }}/{{ summary.total }}</text>
+      </div>
+    </div>
+
+    <scroll class="content" scroll-y="true">
+      <div class="heroCard">
+        <image class="heroImage" src="/assets/cards/ssr01.png"></image>
+        <div class="heroShade"></div>
+        <div class="heroCopy">
+          <text class="heroKicker">今日卡池</text>
+          <text class="heroTitle">收集星象</text>
+          <text class="heroMeta">{{ summary.totalDraws }} 次抽取</text>
+        </div>
+      </div>
+
+      <div class="sectionHeader">
+        <text class="sectionTitle">今日机会</text>
+        <text class="muted">{{ availableCount }} 次可用</text>
+      </div>
+
+      <div class="task" if="{{ status.login }}">
+        <div class="taskNumber"><text>01</text></div>
+        <div class="taskBody">
+          <text class="taskTitle">登录机会</text>
+          <text class="taskMeta">今日已获得一次抽卡</text>
+        </div>
+        <div class="actionButton" onclick="draw('login')">
+          <text>抽取</text>
+        </div>
+      </div>
+
+      <div class="task taskDone" if="{{ !status.login }}">
+        <div class="taskNumber"><text>01</text></div>
+        <div class="taskBody">
+          <text class="taskTitle">登录机会</text>
+          <text class="taskMeta">今日机会已使用</text>
+        </div>
+      </div>
+
+      <div class="task" if="{{ status.exercise }}">
+        <div class="taskNumber"><text>02</text></div>
+        <div class="taskBody">
+          <text class="taskTitle">运动机会</text>
+          <text class="taskMeta">目标已达成</text>
+        </div>
+        <div class="actionButton" onclick="draw('exercise')">
+          <text>抽取</text>
+        </div>
+      </div>
+
+      <div class="task taskDone" if="{{ !status.exercise }}">
+        <div class="taskNumber"><text>02</text></div>
+        <div class="taskBody">
+          <text class="taskTitle">运动机会</text>
+          <text class="taskMeta">
+            {{ status.exerciseValue }}/{{ status.exerciseTarget }} 步
+          </text>
+          <div class="progressTrack">
+            <div
+              class="progressFill"
+              style="width: {{ exercisePercent }}%;"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </scroll>
+
+    <div class="nav">
+      <div class="navActive"><text>抽卡</text></div>
+      <div class="navItem" onclick="openCollection">
+        <text>图鉴</text>
+      </div>
+    </div>
+
+    <div class="revealMask" if="{{ reveal }}">
+      <div class="revealPanel">
+        <text class="revealKicker">{{ reveal.rarityName }}</text>
+        <image class="revealImage" src="/{{ reveal.asset }}"></image>
+        <text class="revealName">{{ reveal.name }}</text>
+        <text class="revealFlavor">{{ reveal.flavor }}</text>
+        <text class="newTag" if="{{ isNew }}">NEW</text>
+        <text class="newTag" if="{{ !isNew }}">
+          已拥有 x{{ reveal.count }}
+        </text>
+        <div class="confirmButton" onclick="closeReveal">
+          <text>收下</text>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import storage from "@system.storage"
+import {
+  claimDailyLogin,
+  createInitialState,
+  drawCard,
+  getCardDetail,
+  getCollectionSummary,
+  getDailyStatus
+} from "../../core/game.js"
+import {
+  getLocalDayKey,
+  readState,
+  writeState
+} from "../../core/runtime.js"
+
+export default {
+  data: {
+    state: null,
+    summary: {
+      owned: 0,
+      total: 24,
+      totalDraws: 0
+    },
+    status: {
+      login: false,
+      exercise: false,
+      exerciseValue: 0,
+      exerciseTarget: 8000,
+      exerciseProgress: 0
+    },
+    availableCount: 0,
+    exercisePercent: 0,
+    reveal: null,
+    isNew: false,
+    busy: false
+  },
+
+  onInit() {
+    this.loadState()
+  },
+
+  onShow() {
+    if (this.state) {
+      this.refreshView(this.state)
+    }
+  },
+
+  async loadState() {
+    const saved = await readState(storage)
+    const today = getLocalDayKey()
+    const result = claimDailyLogin(
+      saved || createInitialState(),
+      today
+    )
+
+    this.state = result.state
+    this.refreshView(result.state)
+    await writeState(storage, result.state)
+  },
+
+  refreshView(state) {
+    this.summary = getCollectionSummary(state)
+    this.status = getDailyStatus(state)
+    this.availableCount =
+      Number(this.status.login) + Number(this.status.exercise)
+    this.exercisePercent = Math.round(
+      this.status.exerciseProgress * 100
+    )
+  },
+
+  async draw(source) {
+    if (this.busy || !this.state) {
+      return
+    }
+
+    this.busy = true
+
+    try {
+      const result = drawCard(this.state, source)
+      const detail = getCardDetail(result.state, result.card.id)
+
+      this.state = result.state
+      this.reveal = detail
+      this.isNew = result.isNew
+      this.refreshView(result.state)
+      await writeState(storage, result.state)
+    } catch (error) {
+      this.refreshView(this.state)
+    }
+
+    this.busy = false
+  },
+
+  closeReveal() {
+    this.reveal = null
+    this.isNew = false
+  },
+
+  openCollection() {
+    router.push({
+      uri: "/pages/collection"
+    })
+  }
+}
+</script>
+
+<style>
+.content {
+  padding-top: 0;
+}
+</style>

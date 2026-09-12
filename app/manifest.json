@@ -1,0 +1,45 @@
+{
+  "package": "com.example.starcard",
+  "name": "星卡集",
+  "versionName": "0.1.0",
+  "versionCode": 1,
+  "minPlatformVersion": 1000,
+  "features": [
+    {
+      "name": "system.router"
+    },
+    {
+      "name": "system.storage"
+    }
+  ],
+  "permissions": [],
+  "router": {
+    "entry": "pages/index",
+    "pages": {
+      "pages/index": {
+        "component": "index"
+      },
+      "pages/collection": {
+        "component": "collection"
+      },
+      "pages/detail": {
+        "component": "detail"
+      }
+    }
+  },
+  "display": {
+    "backgroundColor": "#07111d",
+    "fullScreen": true,
+    "pages": {
+      "pages/index": {
+        "titleBar": false
+      },
+      "pages/collection": {
+        "titleBar": false
+      },
+      "pages/detail": {
+        "titleBar": false
+      }
+    }
+  }
+}

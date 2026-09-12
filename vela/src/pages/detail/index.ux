@@ -1,0 +1,132 @@
+<template>
+  <div class="page">
+    <div class="topbar">
+      <input class="back-button" type="button" value="‹" onclick="goBack" />
+      <text class="title">卡片详情</text>
+      <div class="rarity-pill">
+        <text class="rarity-text">{{card ? card.rarity : ""}}</text>
+      </div>
+    </div>
+
+    <div class="detail" if="{{card}}">
+      <image class="detail-image" src="{{card.uiAsset}}"></image>
+      <text class="detail-name">{{card.name}}</text>
+      <text class="detail-rarity" style="color: {{card.rarityColor}}">{{card.rarityName}}</text>
+      <text class="detail-flavor">{{card.flavor}}</text>
+      <text class="detail-count">持有 {{card.count}} 张</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import storage from "@system.storage"
+import { getCardDetail } from "../../core/game.js"
+import { readState } from "../../core/runtime.js"
+
+export default {
+  private: {
+    card: null
+  },
+
+  data: {
+    id: ""
+  },
+
+  async onInit() {
+    const state = (await readState(storage)) || {}
+    const card = getCardDetail(state, this.id)
+
+    if (card && card.owned) {
+      this.card = {
+        ...card,
+        uiAsset: `/common/cards/${card.id}.png`
+      }
+    }
+  },
+
+  goBack() {
+    router.back()
+  }
+}
+</script>
+
+<style>
+.topbar {
+  height: 52px;
+  padding-left: 12px;
+  padding-right: 12px;
+  flex-direction: row;
+  align-items: center;
+}
+
+.back-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  font-size: 20px;
+  color: #ffffff;
+  background-color: #132235;
+}
+
+.title {
+  flex: 1;
+  margin-left: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f4f7fb;
+}
+
+.rarity-pill {
+  min-width: 42px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background-color: #132235;
+}
+
+.rarity-text {
+  font-size: 11px;
+  color: #a9bfd7;
+}
+
+.detail {
+  flex: 1;
+  padding-left: 28px;
+  padding-right: 28px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail-image {
+  width: 168px;
+  height: 224px;
+  border-radius: 15px;
+}
+
+.detail-name {
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.detail-rarity {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.detail-flavor {
+  margin-top: 9px;
+  font-size: 11px;
+  text-align: center;
+  color: #93a6ba;
+}
+
+.detail-count {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #d2deeb;
+}
+</style>

@@ -1,0 +1,110 @@
+<template>
+  <div class="page">
+    <div class="topbar">
+      <div class="backButton" onclick="goBack">
+        <text>‹</text>
+      </div>
+      <text class="title">图鉴</text>
+      <div class="progressPill">
+        <text>{{ ownedCount }}/{{ totalCount }}</text>
+      </div>
+    </div>
+
+    <scroll class="content" scroll-y="true">
+      <div class="grid">
+        <div
+          class="cardCell"
+          for="{{ item in collection }}"
+          tid="item"
+          onclick="openDetail(item.id)"
+        >
+          <div class="thumb rarity-{{ item.rarity }}">
+            <image
+              class="thumbImage {{ item.owned ? '' : 'lockedImage' }}"
+              src="/{{ item.asset }}"
+            ></image>
+            <div class="countBadge" if="{{ item.count > 1 }}">
+              <text>x{{ item.count }}</text>
+            </div>
+          </div>
+          <text class="cardName">
+            {{ item.owned ? item.name : "未获得" }}
+          </text>
+        </div>
+      </div>
+    </scroll>
+
+    <div class="nav">
+      <div class="navItem" onclick="goHome"><text>抽卡</text></div>
+      <div class="navActive"><text>图鉴</text></div>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import storage from "@system.storage"
+import {
+  getCollection,
+  getCollectionSummary
+} from "../../core/game.js"
+import { readState } from "../../core/runtime.js"
+
+export default {
+  data: {
+    collection: [],
+    ownedCount: 0,
+    totalCount: 24
+  },
+
+  async onInit() {
+    const state = (await readState(storage)) || {}
+    const summary = getCollectionSummary(state)
+
+    this.collection = getCollection(state)
+    this.ownedCount = summary.owned
+    this.totalCount = summary.total
+  },
+
+  openDetail(id) {
+    const item = this.collection.find((card) => card.id === id)
+
+    if (!item || !item.owned) {
+      return
+    }
+
+    router.push({
+      uri: "/pages/detail",
+      params: {
+        id
+      }
+    })
+  },
+
+  goBack() {
+    router.back()
+  },
+
+  goHome() {
+    router.push({
+      uri: "/pages/index"
+    })
+  }
+}
+</script>
+
+<style>
+.topbar {
+  justify-content: flex-start;
+}
+
+.topbar .title {
+  margin-left: 12px;
+  flex: 1;
+  font-size: 18px;
+}
+
+.content {
+  padding-top: 0;
+}
+</style>

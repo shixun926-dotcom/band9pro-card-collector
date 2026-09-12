@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>星卡集交互预览</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="simulator">
+      <section class="preview-copy">
+        <p class="preview-kicker">XIAOMI BAND 9 PRO</p>
+        <h1>星卡集交互预览</h1>
+        <p>
+          336 × 480 视图，直接体验每日登录、运动达标、抽卡、图鉴和详情。
+        </p>
+        <div class="preview-actions">
+          <button type="button" id="add-steps-button">
+            +1000 步
+          </button>
+          <button type="button" id="reset-button">
+            重置数据
+          </button>
+        </div>
+        <p class="preview-note">
+          模拟按钮不会进入快应用正式包。正式版运动数据需由官方健康接口提供。
+        </p>
+      </section>
+
+      <section class="device" aria-label="手环快应用预览">
+        <div class="device-speaker"></div>
+        <div class="device-screen" id="app"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

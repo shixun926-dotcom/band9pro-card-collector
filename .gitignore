@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+vela/node_modules/
+
+# Tool caches and local profiles
+.edge-profile/
+.npm/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

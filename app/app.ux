@@ -1,0 +1,430 @@
+<script>
+export default {
+  onCreate() {},
+  onDestroy() {}
+}
+</script>
+
+<style>
+page {
+  width: 336px;
+  height: 480px;
+  background-color: #07111d;
+  color: #f4f7fb;
+}
+
+.page {
+  width: 336px;
+  height: 480px;
+  flex-direction: column;
+  background-color: #07111d;
+}
+
+.topbar {
+  height: 52px;
+  padding-left: 16px;
+  padding-right: 16px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #07111d;
+}
+
+.title {
+  color: #f4f7fb;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.eyebrow {
+  margin-top: 1px;
+  color: #698099;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.muted {
+  color: #7e91a6;
+  font-size: 12px;
+}
+
+.progressPill {
+  min-width: 54px;
+  height: 26px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 13px;
+  align-items: center;
+  justify-content: center;
+  background-color: #132235;
+}
+
+.progressPill text {
+  color: #a9bfd7;
+  font-size: 12px;
+}
+
+.content {
+  flex: 1;
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-bottom: 58px;
+}
+
+.heroCard {
+  height: 142px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #111f31;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroShade {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 142px;
+  background-color: rgba(5, 12, 22, 0.42);
+}
+
+.heroCopy {
+  position: absolute;
+  left: 16px;
+  top: 17px;
+}
+
+.heroKicker {
+  color: #d2deec;
+  font-size: 11px;
+}
+
+.heroTitle {
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 27px;
+  font-weight: 600;
+}
+
+.heroMeta {
+  margin-top: 7px;
+  color: #abbcd0;
+  font-size: 11px;
+}
+
+.sectionHeader {
+  height: 39px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  color: #dbe6f2;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.task {
+  min-height: 68px;
+  margin-bottom: 9px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  flex-direction: row;
+  align-items: center;
+  background-color: #122033;
+}
+
+.taskDone {
+  background-color: #0d1827;
+}
+
+.taskNumber {
+  width: 36px;
+  height: 36px;
+  margin-right: 11px;
+  border-radius: 11px;
+  align-items: center;
+  justify-content: center;
+  background-color: #1b3049;
+}
+
+.taskNumber text {
+  color: #78b8f5;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.taskBody {
+  flex: 1;
+}
+
+.taskTitle {
+  color: #f0f5fb;
+  font-size: 14px;
+}
+
+.taskMeta {
+  margin-top: 4px;
+  color: #8195aa;
+  font-size: 10px;
+}
+
+.actionButton {
+  width: 55px;
+  height: 32px;
+  border-radius: 16px;
+  align-items: center;
+  justify-content: center;
+  background-color: #3f9cff;
+}
+
+.actionButton text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.progressTrack {
+  height: 3px;
+  margin-top: 7px;
+  border-radius: 2px;
+  background-color: #26384d;
+}
+
+.progressFill {
+  height: 3px;
+  border-radius: 2px;
+  background-color: #4aa8ff;
+}
+
+.nav {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 336px;
+  height: 52px;
+  flex-direction: row;
+  background-color: #0b1727;
+}
+
+.navItem {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.navItem text {
+  color: #6f8297;
+  font-size: 12px;
+}
+
+.navActive {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.navActive text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.revealMask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 336px;
+  height: 480px;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(2, 7, 14, 0.9);
+}
+
+.revealPanel {
+  width: 254px;
+  padding: 15px;
+  border-radius: 18px;
+  align-items: center;
+  background-color: #101e30;
+}
+
+.revealKicker {
+  color: #87a3c0;
+  font-size: 11px;
+}
+
+.revealImage {
+  width: 132px;
+  height: 176px;
+  margin-top: 9px;
+  border-radius: 11px;
+}
+
+.revealName {
+  margin-top: 10px;
+  color: #ffffff;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.revealFlavor {
+  margin-top: 5px;
+  color: #9cafc3;
+  font-size: 11px;
+  text-align: center;
+}
+
+.newTag {
+  margin-top: 8px;
+  color: #ffce70;
+  font-size: 10px;
+}
+
+.confirmButton {
+  width: 118px;
+  height: 34px;
+  margin-top: 13px;
+  border-radius: 17px;
+  align-items: center;
+  justify-content: center;
+  background-color: #3f9cff;
+}
+
+.confirmButton text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.grid {
+  padding-bottom: 58px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.cardCell {
+  width: 33.333%;
+  padding: 6px;
+  align-items: center;
+}
+
+.thumb {
+  width: 86px;
+  height: 115px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #111e2e;
+}
+
+.thumbImage {
+  width: 86px;
+  height: 115px;
+  object-fit: cover;
+}
+
+.lockedImage {
+  opacity: 0.16;
+}
+
+.cardName {
+  width: 96px;
+  margin-top: 4px;
+  color: #c7d4e2;
+  font-size: 10px;
+  text-align: center;
+}
+
+.countBadge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  min-width: 22px;
+  height: 17px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-radius: 9px;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(4, 10, 18, 0.82);
+}
+
+.countBadge text {
+  color: #ffffff;
+  font-size: 9px;
+}
+
+.detailWrap {
+  flex: 1;
+  padding-left: 28px;
+  padding-right: 28px;
+  align-items: center;
+}
+
+.detailImage {
+  width: 168px;
+  height: 224px;
+  border-radius: 15px;
+}
+
+.detailName {
+  margin-top: 12px;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.detailRarity {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.detailFlavor {
+  margin-top: 9px;
+  color: #93a6ba;
+  font-size: 11px;
+  text-align: center;
+}
+
+.detailCount {
+  margin-top: 8px;
+  color: #d2deeb;
+  font-size: 11px;
+}
+
+.backButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  align-items: center;
+  justify-content: center;
+  background-color: #132235;
+}
+
+.backButton text {
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.rarity-N {
+  border: 1px solid #526175;
+}
+
+.rarity-R {
+  border: 1px solid #2f78b9;
+}
+
+.rarity-SR {
+  border: 1px solid #8b55c2;
+}
+
+.rarity-SSR {
+  border: 1px solid #d69b31;
+}
+</style>

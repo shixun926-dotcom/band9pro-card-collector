@@ -1,0 +1,65 @@
+<template>
+  <div class="page">
+    <div class="topbar">
+      <div class="backButton" onclick="goBack">
+        <text>‹</text>
+      </div>
+      <text class="title">卡片详情</text>
+      <div class="progressPill">
+        <text>{{ card ? card.rarity : "" }}</text>
+      </div>
+    </div>
+
+    <div class="detailWrap" if="{{ card }}">
+      <image class="detailImage" src="/{{ card.asset }}"></image>
+      <text class="detailName">{{ card.name }}</text>
+      <text
+        class="detailRarity"
+        style="color: {{ card.rarityColor }};"
+      >
+        {{ card.rarityName }}
+      </text>
+      <text class="detailFlavor">{{ card.flavor }}</text>
+      <text class="detailCount">持有 {{ card.count }} 张</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import storage from "@system.storage"
+import { getCardDetail } from "../../core/game.js"
+import { readState } from "../../core/runtime.js"
+
+export default {
+  data: {
+    id: "",
+    card: null
+  },
+
+  async onInit() {
+    const state = (await readState(storage)) || {}
+    const card = getCardDetail(state, this.id)
+
+    if (card && card.owned) {
+      this.card = card
+    }
+  },
+
+  goBack() {
+    router.back()
+  }
+}
+</script>
+
+<style>
+.topbar {
+  justify-content: flex-start;
+}
+
+.topbar .title {
+  margin-left: 12px;
+  flex: 1;
+  font-size: 18px;
+}
+</style>

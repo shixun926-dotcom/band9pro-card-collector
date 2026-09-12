@@ -1,0 +1,240 @@
+<template>
+  <div class="page">
+    <div class="topbar">
+      <input class="back-button" type="button" value="‹" onclick="goBack" />
+      <text class="title">图鉴</text>
+      <div class="counter">
+        <text class="counter-text">{{ownedCount}}/{{totalCount}}</text>
+      </div>
+    </div>
+
+    <scroll class="content" scroll-y="true">
+      <div class="grid">
+        <div
+          class="card-cell"
+          for="{{collection}}"
+          tid="id"
+          onclick="openDetail($item.id)"
+        >
+          <div class="thumb rarity-{{$item.rarity}}">
+            <image
+              class="thumb-image {{$item.owned ? '' : 'locked-image'}}"
+              src="{{$item.uiAsset}}"
+            ></image>
+            <text class="count-badge" if="{{$item.count > 1}}">x{{$item.count}}</text>
+          </div>
+          <text class="card-name">{{$item.owned ? $item.name : "未获得"}}</text>
+        </div>
+      </div>
+    </scroll>
+
+    <div class="nav">
+      <div class="nav-item" onclick="goHome">
+        <text class="nav-text">抽卡</text>
+      </div>
+      <div class="nav-active"><text class="nav-text-active">图鉴</text></div>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import storage from "@system.storage"
+import {
+  getCollection,
+  getCollectionSummary
+} from "../../core/game.js"
+import { readState } from "../../core/runtime.js"
+
+export default {
+  private: {
+    collection: [],
+    ownedCount: 0,
+    totalCount: 24
+  },
+
+  async onInit() {
+    const state = (await readState(storage)) || {}
+    const summary = getCollectionSummary(state)
+    const collection = getCollection(state)
+
+    this.collection = collection.map((card) => ({
+      ...card,
+      uiAsset: `/common/cards/${card.id}.png`
+    }))
+    this.ownedCount = summary.owned
+    this.totalCount = summary.total
+  },
+
+  openDetail(id) {
+    const item = this.collection.find((card) => card.id === id)
+
+    if (!item || !item.owned) {
+      return
+    }
+
+    router.push({
+      uri: "/pages/detail",
+      params: {
+        id
+      }
+    })
+  },
+
+  goBack() {
+    router.back()
+  },
+
+  goHome() {
+    router.push({
+      uri: "/pages/home"
+    })
+  }
+}
+</script>
+
+<style>
+.topbar {
+  height: 52px;
+  padding-left: 12px;
+  padding-right: 12px;
+  flex-direction: row;
+  align-items: center;
+}
+
+.back-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  font-size: 20px;
+  color: #ffffff;
+  background-color: #132235;
+}
+
+.title {
+  flex: 1;
+  margin-left: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f4f7fb;
+}
+
+.counter {
+  min-width: 54px;
+  height: 26px;
+  padding-left: 8px;
+  padding-right: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background-color: #132235;
+}
+
+.counter-text {
+  font-size: 12px;
+  color: #a9bfd7;
+}
+
+.content {
+  flex: 1;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+}
+
+.card-cell {
+  width: 33.333%;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.thumb {
+  position: relative;
+  width: 86px;
+  height: 115px;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #111e2e;
+}
+
+.thumb-image {
+  width: 86px;
+  height: 115px;
+  object-fit: cover;
+}
+
+.locked-image {
+  opacity: 0.16;
+}
+
+.card-name {
+  width: 96px;
+  margin-top: 4px;
+  font-size: 10px;
+  text-align: center;
+  color: #c7d4e2;
+}
+
+.count-badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  min-width: 22px;
+  height: 17px;
+  padding-left: 4px;
+  padding-right: 4px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 9px;
+  color: #ffffff;
+  background-color: rgba(4, 10, 18, 0.82);
+}
+
+.rarity-N {
+  border: 1px solid #526175;
+}
+
+.rarity-R {
+  border: 1px solid #2f78b9;
+}
+
+.rarity-SR {
+  border: 1px solid #8b55c2;
+}
+
+.rarity-SSR {
+  border: 1px solid #d69b31;
+}
+
+.nav {
+  height: 52px;
+  flex-direction: row;
+  background-color: #0b1727;
+}
+
+.nav-item,
+.nav-active {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-text {
+  font-size: 12px;
+  color: #6f8297;
+}
+
+.nav-text-active {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+</style>

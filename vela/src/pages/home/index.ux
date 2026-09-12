@@ -1,0 +1,512 @@
+<template>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <text class="title">星卡集</text>
+        <text class="eyebrow">DAILY COLLECTION</text>
+      </div>
+      <div class="counter">
+        <text class="counter-text">{{summary.owned}}/{{summary.total}}</text>
+      </div>
+    </div>
+
+    <scroll class="content" scroll-y="true">
+      <div class="hero">
+        <image class="hero-image" src="/common/cards/ssr01.png"></image>
+        <div class="hero-copy">
+          <text class="hero-kicker">今日卡池</text>
+          <text class="hero-title">收集星象</text>
+          <text class="hero-meta">{{summary.totalDraws}} 次抽取</text>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <text class="section-title">今日机会</text>
+        <text class="muted">{{availableCount}} 次可用</text>
+      </div>
+
+      <div class="task" if="{{status.login}}">
+        <div class="task-no"><text class="task-number-text">01</text></div>
+        <div class="task-copy">
+          <text class="task-title">登录机会</text>
+          <text class="task-meta">今日已获得一次抽卡</text>
+        </div>
+        <input
+          class="draw-button"
+          type="button"
+          value="抽取"
+          onclick="drawLogin"
+        />
+      </div>
+
+      <div class="task done" if="{{!status.login}}">
+        <div class="task-no"><text class="task-number-text">01</text></div>
+        <div class="task-copy">
+          <text class="task-title">登录机会</text>
+          <text class="task-meta">今日机会已使用</text>
+        </div>
+      </div>
+
+      <div class="task" if="{{status.exercise}}">
+        <div class="task-no"><text class="task-number-text">02</text></div>
+        <div class="task-copy">
+          <text class="task-title">运动机会</text>
+          <text class="task-meta">目标已达成</text>
+        </div>
+        <input
+          class="draw-button"
+          type="button"
+          value="抽取"
+          onclick="drawExercise"
+        />
+      </div>
+
+      <div class="task done" if="{{!status.exercise}}">
+        <div class="task-no"><text class="task-number-text">02</text></div>
+        <div class="task-copy">
+          <text class="task-title">运动机会</text>
+          <text class="task-meta">{{status.exerciseValue}}/{{status.exerciseTarget}} 步</text>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: {{exercisePercent}}%"></div>
+          </div>
+        </div>
+      </div>
+    </scroll>
+
+    <div class="nav">
+      <div class="nav-active"><text class="nav-text-active">抽卡</text></div>
+      <div class="nav-item" onclick="openCollection">
+        <text class="nav-text">图鉴</text>
+      </div>
+    </div>
+
+    <div class="reveal-mask" if="{{reveal}}">
+      <div class="reveal-panel">
+        <text class="reveal-kicker">{{reveal.rarityName}}</text>
+        <image class="reveal-image" src="{{reveal.uiAsset}}"></image>
+        <text class="reveal-name">{{reveal.name}}</text>
+        <text class="reveal-flavor">{{reveal.flavor}}</text>
+        <text class="new-tag" if="{{isNew}}">NEW</text>
+        <text class="new-tag" if="{{!isNew}}">已拥有 x{{reveal.count}}</text>
+        <input
+          class="confirm-button"
+          type="button"
+          value="收下"
+          onclick="closeReveal"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import storage from "@system.storage"
+import health from "@service.health"
+import {
+  claimDailyLogin,
+  createInitialState,
+  drawCard,
+  getCardDetail,
+  getCollectionSummary,
+  getDailyStatus,
+  recordExercise
+} from "../../core/game.js"
+import {
+  getLocalDayKey,
+  readState,
+  writeState
+} from "../../core/runtime.js"
+
+export default {
+  private: {
+    state: null,
+    summary: {
+      owned: 0,
+      total: 24,
+      totalDraws: 0
+    },
+    status: {
+      login: false,
+      exercise: false,
+      exerciseValue: 0,
+      exerciseTarget: 8000,
+      exerciseProgress: 0
+    },
+    reveal: null,
+    isNew: false
+  },
+
+  data: {
+    availableCount: 0,
+    exercisePercent: 0,
+    busy: false
+  },
+
+  onInit() {
+    this.loadState()
+  },
+
+  onShow() {
+    if (this.state) {
+      this.refreshView(this.state)
+    }
+  },
+
+  async loadState() {
+    const stored = await readState(storage)
+    const today = getLocalDayKey()
+    const result = claimDailyLogin(
+      stored || createInitialState(),
+      today
+    )
+
+    this.state = result.state
+    this.refreshView(result.state)
+    await writeState(storage, result.state)
+    this.loadSteps()
+  },
+
+  loadSteps() {
+    const self = this
+
+    health.getTodaySteps({
+      success(data) {
+        self.applyExercise(data.steps)
+      },
+      fail() {}
+    })
+  },
+
+  async applyExercise(steps) {
+    if (!this.state || !Number.isFinite(Number(steps))) {
+      return
+    }
+
+    const result = recordExercise(
+      this.state,
+      getLocalDayKey(),
+      Number(steps)
+    )
+
+    this.state = result.state
+    this.refreshView(result.state)
+    await writeState(storage, result.state)
+  },
+
+  refreshView(state) {
+    this.summary = getCollectionSummary(state)
+    this.status = getDailyStatus(state)
+    this.availableCount =
+      Number(this.status.login) + Number(this.status.exercise)
+    this.exercisePercent = Math.round(
+      this.status.exerciseProgress * 100
+    )
+  },
+
+  async draw(source) {
+    if (this.busy || !this.state) {
+      return
+    }
+
+    this.busy = true
+
+    try {
+      const result = drawCard(this.state, source)
+      const detail = getCardDetail(result.state, result.card.id)
+
+      this.state = result.state
+      this.reveal = {
+        ...detail,
+        uiAsset: `/common/cards/${detail.id}.png`
+      }
+      this.isNew = result.isNew
+      this.refreshView(result.state)
+      await writeState(storage, result.state)
+    } catch (error) {
+      this.refreshView(this.state)
+    }
+
+    this.busy = false
+  },
+
+  drawLogin() {
+    this.draw("login")
+  },
+
+  drawExercise() {
+    this.draw("exercise")
+  },
+
+  closeReveal() {
+    this.reveal = null
+    this.isNew = false
+  },
+
+  openCollection() {
+    router.push({
+      uri: "/pages/collection"
+    })
+  }
+}
+</script>
+
+<style>
+.topbar {
+  height: 52px;
+  padding-left: 16px;
+  padding-right: 16px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  flex-direction: column;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f4f7fb;
+}
+
+.eyebrow {
+  margin-top: 1px;
+  font-size: 9px;
+  color: #698099;
+}
+
+.counter {
+  min-width: 54px;
+  height: 26px;
+  padding-left: 8px;
+  padding-right: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background-color: #132235;
+}
+
+.counter-text {
+  font-size: 12px;
+  color: #a9bfd7;
+}
+
+.content {
+  flex: 1;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.hero {
+  height: 142px;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: #111f31;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-copy {
+  position: absolute;
+  left: 16px;
+  top: 17px;
+  flex-direction: column;
+}
+
+.hero-kicker {
+  font-size: 11px;
+  color: #d2deec;
+}
+
+.hero-title {
+  margin-top: 4px;
+  font-size: 27px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.hero-meta {
+  margin-top: 7px;
+  font-size: 11px;
+  color: #abbcd0;
+}
+
+.section-head {
+  height: 39px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #dbe6f2;
+}
+
+.muted {
+  font-size: 11px;
+  color: #7e91a6;
+}
+
+.task {
+  min-height: 68px;
+  margin-bottom: 9px;
+  padding: 11px 12px;
+  flex-direction: row;
+  align-items: center;
+  border-radius: 13px;
+  background-color: #122033;
+}
+
+.task.done {
+  background-color: #0d1827;
+}
+
+.task-no {
+  width: 36px;
+  height: 36px;
+  margin-right: 11px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background-color: #1b3049;
+}
+
+.task-number-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #78b8f5;
+}
+
+.task-copy {
+  flex: 1;
+  flex-direction: column;
+}
+
+.task-title {
+  font-size: 14px;
+  color: #f0f5fb;
+}
+
+.task-meta {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #8195aa;
+}
+
+.draw-button {
+  width: 55px;
+  height: 32px;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #ffffff;
+  background-color: #3f9cff;
+}
+
+.progress-track {
+  height: 3px;
+  margin-top: 7px;
+  border-radius: 2px;
+  background-color: #26384d;
+}
+
+.progress-fill {
+  height: 3px;
+  border-radius: 2px;
+  background-color: #4aa8ff;
+}
+
+.nav {
+  height: 52px;
+  flex-direction: row;
+  background-color: #0b1727;
+}
+
+.nav-item,
+.nav-active {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-text {
+  font-size: 12px;
+  color: #6f8297;
+}
+
+.nav-text-active {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.reveal-mask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 336px;
+  height: 480px;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(2, 7, 14, 0.92);
+}
+
+.reveal-panel {
+  width: 254px;
+  padding: 15px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 18px;
+  background-color: #101e30;
+}
+
+.reveal-kicker {
+  font-size: 11px;
+  color: #87a3c0;
+}
+
+.reveal-image {
+  width: 132px;
+  height: 176px;
+  margin-top: 9px;
+  border-radius: 11px;
+}
+
+.reveal-name {
+  margin-top: 10px;
+  font-size: 21px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.reveal-flavor {
+  margin-top: 5px;
+  font-size: 11px;
+  color: #9cafc3;
+  text-align: center;
+}
+
+.new-tag {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #ffce70;
+}
+
+.confirm-button {
+  width: 118px;
+  height: 34px;
+  margin-top: 13px;
+  border-radius: 17px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #3f9cff;
+}
+</style>

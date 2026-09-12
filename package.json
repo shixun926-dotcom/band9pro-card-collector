@@ -1,0 +1,13 @@
+{
+  "name": "band9pro-card-collector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "assets:generate": "node tools/generate-placeholder-cards.mjs",
+    "check:budget": "node tools/check-budget.mjs",
+    "preview": "node tools/serve-simulator.mjs",
+    "test": "node --test",
+    "verify": "npm run test && npm run check:budget"
+  }
+}
